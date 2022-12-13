@@ -208,3 +208,30 @@ nested <- by_year_country %>%
 # Unnest the data column to return it to its original form
 nested %>%
   unnest(data)
+# Load tidyr and purrr
+library(tidyr)
+library(purrr)
+
+# Perform a linear regression on each item in the data column
+by_year_country %>%
+  nest(-country) %>%
+  mutate(model = map(data, ~ lm(percent_yes ~ year, data = .)))
+  # Load the broom package
+library(broom)
+
+# Add another mutate that applies tidy() to each model
+by_year_country %>%
+  nest(-country) %>%
+  mutate(model = map(data, ~ lm(percent_yes ~ year, data = .)),
+         tidied = map(model, tidy))
+         
+         
+ # Add one more step that unnests the tidied column
+country_coefficients <- by_year_country %>%
+  nest(-country) %>%
+  mutate(model = map(data, ~ lm(percent_yes ~ year, data = .)),
+         tidied = map(model, tidy)) %>%
+  unnest(tidied)
+
+# Print the resulting country_coefficients variable
+country_coefficients
