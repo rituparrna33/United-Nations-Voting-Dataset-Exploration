@@ -13,4 +13,52 @@ votes %>%
   filter(vote <= 3) %>%
   mutate(year=1945+session)
  
+The country codes in the ccode column are what's called Correlates of War codes. This isn't ideal for an analysis, since you'd like to work with recognizable country names.
+
+You can use the countrycode package to translate. For example:
+
+# Load the countrycode package
+library(countrycode)
+
+# Convert country code 100
+countrycode(100, "cown", "country.name")
+
+# Add a country column within the mutate: votes_processed
+votes_processed <- votes %>%
+  filter(vote <= 3) %>%
+  mutate(year = session + 1945,
+         country = countrycode(ccode, "cown", "country.name"))
+         
+Summarizing the full dataset
+In this analysis, you're going to focus on "% of votes that are yes" as a metric for the "agreeableness" of countries.
+
+# Print votes_processed
+votes_processed
+
+# Find total and fraction of "yes" votes
+votes_processed%>%
+summarize(total=n(),percent_yes=mean(vote==1))
+
+# Change this code to summarize by year
+votes_processed %>%
+group_by(year) %>%
+  summarize(total = n(),
+            percent_yes = mean(vote == 1))
+            
+# Summarize by country: by_country
+by_country <- votes_processed%>%
+  group_by(country) %>%
+  summarize(total = n(),
+            percent_yes = mean(vote == 1))
+            
+ # Print the by_country dataset
+by_country
+
+# Sort in ascending order of percent_yes
+by_country %>%
+arrange(percent_yes)
+
+# Now sort in descending order
+by_country %>%
+arrange(desc(percent_yes))
 
